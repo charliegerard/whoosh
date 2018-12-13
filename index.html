@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hoverboard game</title>
+    <script src="js/three.min.js"></script>
+    <script src="js/Detector.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/THREEx.KeyboardState.js"></script>
+    <script src="js/THREEx.FullScreen.js"></script>
+    <script src="js/THREEx.WindowResize.js"></script>
+    <style>
+        body {
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            top: 50px;
+        }
+
+        .score-container {
+            /*background-color: red;*/
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition: transform 0.5s 4s;
+        }
+
+        .score-container #score {
+            color: white;
+            font-size: 8vh;
+            font-family: 'Exo', sans-serif;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+  <button id="connect">Connect</button>
+<div class="score-container">
+    <div id="score"></div>
+</div>
+
+<div id="ThreeJS"></div>
+<audio src="sound/explode.mp3" preload="auto" id="explode_sound"></audio>
+
+<script src="js/daydream.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>
