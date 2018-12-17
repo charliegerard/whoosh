@@ -22,6 +22,9 @@ animate();
 function init() {
     // Scene
     scene = new THREE.Scene();
+    // scene.fog = new THREE.FogExp2( new THREE.Color("rgb(0,0,0)"), 0.0004 );
+    scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
+
     // Camera
     var screenWidth = window.innerWidth;
     var screenHeight = window.innerHeight;
@@ -30,30 +33,49 @@ function init() {
 
     // Renderer
     if (Detector.webgl) {
-        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     } else {
         renderer = new THREE.CanvasRenderer();
     }
-    renderer.setSize(screenWidth * 0.85, screenHeight * 0.85);
+    renderer.setSize(screenWidth, screenHeight);
+    renderer.autoClear = false;
+    renderer.setClearColor(0x000000, 0.0);
+    renderer.setClearAlpha(1.0)
     container = document.getElementById("ThreeJS");
     container.appendChild(renderer.domElement);
 
     THREEx.WindowResize(renderer, camera);
     // controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(-250, -1, -3000));
-    geometry.vertices.push(new THREE.Vector3(-300, -1, 200));
-    material = new THREE.LineBasicMaterial({
-        color: 0x6699FF, linewidth: 5, fog: true
-    });
-    var line1 = new THREE.Line(geometry, material);
-    scene.add(line1);
-    geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(250, -1, -3000));
-    geometry.vertices.push(new THREE.Vector3(300, -1, 200));
-    var line2 = new THREE.Line(geometry, material);
-    scene.add(line2);
+    let ambientLight = new THREE.AmbientLight( 0x000000 ); // soft white light
+    ambientLight.position.set(0, 30, -1000);
+    scene.add( ambientLight );
+
+    //平行光源
+    let light = new THREE.DirectionalLight( 0xffffff, 1 );
+    light.position.set(0, 30, -1000);
+    scene.add( light );
+
+    var size = window.innerWidth * 2;
+    var divisions = 100;
+    var gridColor = new THREE.Color(0xffffff);
+    var gridHelper = new THREE.GridHelper( size, divisions, gridColor, gridColor );
+    gridHelper.position.z = -1000;
+    scene.add( gridHelper );
+
+    // geometry = new THREE.Geometry();
+    // geometry.vertices.push(new THREE.Vector3(-250, -1, -3000));
+    // geometry.vertices.push(new THREE.Vector3(-300, -1, 200));
+    // material = new THREE.LineBasicMaterial({
+    //     color: 0x11e8bb, linewidth: 5, fog: true
+    // });
+    // var line1 = new THREE.Line(geometry, material);
+    // scene.add(line1);
+    // geometry = new THREE.Geometry();
+    // geometry.vertices.push(new THREE.Vector3(250, -1, -3000));
+    // geometry.vertices.push(new THREE.Vector3(300, -1, 200));
+    // var line2 = new THREE.Line(geometry, material);
+    // scene.add(line2);
 
     var cubeGeometry = new THREE.CubeGeometry(50, 25, 60, 5, 5, 5);
     var wireMaterial = new THREE.MeshBasicMaterial({
@@ -185,7 +207,8 @@ function makeRandomCube() {
 
     box.position.x = getRandomArbitrary(-250, 250);
     box.position.y = 1 + b / 2;
-    box.position.z = getRandomArbitrary(-800, -1200);
+    // box.position.z = getRandomArbitrary(-800, -1200);
+    box.position.z = getRandomArbitrary(-3000, -5000);
     cubes.push(box);
     box.name = "box_" + id;
     id++;

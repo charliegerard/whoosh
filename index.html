@@ -11,29 +11,32 @@
     <script src="js/THREEx.WindowResize.js"></script>
     <style>
         body {
-            background-color: #000;
-            overflow: hidden;
+          /* background: linear-gradient(to bottom,  #11e8bb 0%,#8200c9 100%); */
+          background: linear-gradient(to bottom,  #0eb38f 0%,#5a008a 100%);
+          /* overflow: hidden; */
+          margin: 0;
         }
 
-        canvas {
-            display: block;
-            margin: 0 auto;
-            top: 50px;
+        .ThreeJS {
+          display: block;
+          width: 100%;
+          margin: 0 auto;
+          top: 50px;
         }
 
         .score-container {
-            /*background-color: red;*/
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            transition: transform 0.5s 4s;
+          /*background-color: red;*/
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          transition: transform 0.5s 4s;
         }
 
         .score-container #score {
-            color: white;
-            font-size: 8vh;
-            font-family: 'Exo', sans-serif;
-            font-weight: 700;
+          color: white;
+          font-size: 8vh;
+          font-family: 'Exo', sans-serif;
+          font-weight: 700;
         }
     </style>
 </head>
