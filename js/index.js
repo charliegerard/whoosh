@@ -17,7 +17,7 @@ var zOrientation = 0;
 
 init();
 
-animate();
+// animate();
 
 function init() {
     // Scene
@@ -28,14 +28,15 @@ function init() {
     // Camera
     var screenWidth = window.innerWidth;
     var screenHeight = window.innerHeight;
-    camera = new THREE.PerspectiveCamera(45, screenWidth / screenHeight, 1, 20000);
-    camera.position.set(0, 170, 400);
+    camera = new THREE.PerspectiveCamera(75, screenWidth / screenHeight, 1, 1500);
+    camera.position.z = 100;
+    camera.position.y = 70;
 
     // Renderer
     if (Detector.webgl) {
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     } else {
-        renderer = new THREE.CanvasRenderer();
+      renderer = new THREE.CanvasRenderer();
     }
     renderer.setSize(screenWidth, screenHeight);
     renderer.autoClear = false;
@@ -47,20 +48,20 @@ function init() {
     THREEx.WindowResize(renderer, camera);
     // controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    let ambientLight = new THREE.AmbientLight( 0x000000 ); // soft white light
-    ambientLight.position.set(0, 30, -1000);
-    scene.add( ambientLight );
-
-    //平行光源
-    let light = new THREE.DirectionalLight( 0xffffff, 1 );
-    light.position.set(0, 30, -1000);
-    scene.add( light );
+    var light = new THREE.PointLight();
+    light.position.set(200, 200, 100);
+    var lightSize = 30;
+    lightHelper = new THREE.PointLightHelper(light, lightSize);
+    scene.add(light);
+    scene.add(lightHelper);
 
     var size = window.innerWidth * 2;
     var divisions = 100;
-    var gridColor = new THREE.Color(0xffffff);
-    var gridHelper = new THREE.GridHelper( size, divisions, gridColor, gridColor );
+    // var gridColor = new THREE.Color("rgb(145,252,253)");
+    var gridColor = new THREE.Color("rgb(0,0,0)");
+    var gridHelper = new THREE.GridHelper( size, divisions, 0x91FCFD, 0x91FCFD );
     gridHelper.position.z = -1000;
+    gridHelper.position.y = -50;
     scene.add( gridHelper );
 
     // geometry = new THREE.Geometry();
@@ -90,14 +91,14 @@ function init() {
     movingCube.position.set(0, 25, -20);
     scene.add(movingCube);
 
+    renderer.render(scene, camera);
 
 }
 
 function animate() {
-    requestAnimationFrame(animate);
-    update();
-    renderer.render(scene, camera);
-
+  requestAnimationFrame(animate);
+  update();
+  renderer.render(scene, camera);
 }
 
 function update() {

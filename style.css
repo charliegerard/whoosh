@@ -1,0 +1,41 @@
+body{
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.intro{
+  position: absolute;
+  z-index: 10;
+}
+
+h1.title{
+  color: white;
+  font-size: 70px;
+  text-align: center;
+  margin-bottom: 1em;
+}
+
+button#connect{
+  margin: 0 auto;
+  display: block;
+  border-radius: 5px;
+  padding: 1em;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sun{
+  width: 15em;
+  height: 15em;
+  border-radius: 7.5em;
+  /* border: 5px solid rgb(228, 68, 89); */
+  box-shadow: 0px 0px 75px rgb(237, 71, 93);
+  /* background-color: yellow; */
+  background: linear-gradient(to bottom, orange 1%, yellow 65%,#5a008a 100%);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -10;
+}
