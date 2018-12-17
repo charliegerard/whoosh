@@ -13,11 +13,15 @@ var id = 0;
 var crashId = " ";
 var lastCrashId = " ";
 
+var bluetoothConnected = false;
+
 var zOrientation = 0;
 
 init();
 
-// animate();
+if(bluetoothConnected){
+  animate();
+}
 
 function init() {
     // Scene
@@ -38,6 +42,7 @@ function init() {
     } else {
       renderer = new THREE.CanvasRenderer();
     }
+
     renderer.setSize(screenWidth, screenHeight);
     renderer.autoClear = false;
     renderer.setClearColor(0x000000, 0.0);
@@ -46,7 +51,6 @@ function init() {
     container.appendChild(renderer.domElement);
 
     THREEx.WindowResize(renderer, camera);
-    // controls = new THREE.OrbitControls(camera, renderer.domElement);
 
     var light = new THREE.PointLight();
     light.position.set(200, 200, 100);
@@ -177,8 +181,6 @@ function update() {
 
     score += 0.1;
     scoreText.innerText = "Score:" + Math.floor(score);
-
-    //controls.update();
 }
 
 function getRandomArbitrary(min, max) {
@@ -227,6 +229,10 @@ window.onload = () => {
 
     var controller = new DaydreamController();
     controller.onStateChange( function ( state ) {
+      if(!bluetoothConnected){
+        bluetoothConnected = true;
+      }
+
         if(previousValue !== state.zOri){
           // zOrientation = state.zOri * 10;
           difference = state.zOri - previousValue;
