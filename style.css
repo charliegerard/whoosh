@@ -62,6 +62,7 @@ button#connect{
   font-size: 16px;
   cursor: pointer;
   font-family: "Teko";
+  transition: display 1s ease-out;
 }
 
 .sun{
@@ -78,3 +79,26 @@ button#connect{
   transform: translate(-50%, -50%);
   z-index: -10;
 }
+
+
+button#connect.fade-out{
+  display: none;
+}
+
+.counter{
+  position: absolute;
+  display: block;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgb(237, 71, 93);
+  font-size: 100px;
+  z-index: 20;
+  transition: display 1s ease-out;
+}
+
+.counter.fade-out{
+  display: none;
+}
+
+

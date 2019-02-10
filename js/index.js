@@ -17,11 +17,9 @@ var bluetoothConnected = false;
 
 var zOrientation = 0;
 
-init();
+let counter = 3;
 
-if(bluetoothConnected){
-  animate();
-}
+init();
 
 function init() {
     // Scene
@@ -109,7 +107,10 @@ function update() {
     var delta = clock.getDelta();
     var moveDistance = 200 * delta;
     var rotateAngle = Math.PI / 2 * delta;
-    movingCube.position.x -= zOrientation;
+    if(movingCube.position.x < 50 && movingCube.position.x > -50){
+      movingCube.position.x -= zOrientation;
+    }
+
 
     if (keyboard.pressed("left") || keyboard.pressed("A")) {
         if (movingCube.position.x > -270)
@@ -220,23 +221,46 @@ function makeRandomCube() {
     scene.add(box);
 }
 
+function displayCounter(){
+  const counterDiv = document.getElementsByClassName('counter')[0];
+  counterDiv.innerHTML = counter;
+  if(counter > 0){
+    counter--;
+  } else if(counter === 0){
+    clearInterval(interval);
+    counterDiv.classList.add('fade-out');
+    animate();
+  }
+}
+
+let interval;
+
 window.onload = () => {
   const connectButton = document.getElementById('connect');
   var initialised = false;
   var previousValue;
   var difference;
+
   connectButton.onclick = function(){
 
     var controller = new DaydreamController();
     controller.onStateChange( function ( state ) {
       if(!bluetoothConnected){
         bluetoothConnected = true;
+        connectButton.classList.add('fade-out');
+
+        interval = setInterval(function(){
+          displayCounter();
+        },1000);
+
       }
 
         if(previousValue !== state.zOri){
           // zOrientation = state.zOri * 10;
           difference = state.zOri - previousValue;
           zOrientation = state.zOri * 15
+          console.log(movingCube.position.x)
+
         }
         previousValue = state.zOri
         // var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );
