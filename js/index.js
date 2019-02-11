@@ -107,32 +107,27 @@ function update() {
     var delta = clock.getDelta();
     var moveDistance = 200 * delta;
     var rotateAngle = Math.PI / 2 * delta;
-    if(movingCube.position.x < 50 && movingCube.position.x > -50){
+
+    movingCube.position.x -= zOrientation;
+
+    if(movingCube.position.x > 50 && zOrientation < 0){
+      movingCube.position.x += zOrientation;
+    }
+    if(movingCube.position.x < -50 && zOrientation < 0){
+      console.log('boooooom')
       movingCube.position.x -= zOrientation;
     }
+
+    // console.log(zOrientation)
 
 
     if (keyboard.pressed("left") || keyboard.pressed("A")) {
         if (movingCube.position.x > -270)
-            // movingCube.position.x -= moveDistance;
             movingCube.position.x -= zOrientation;
-        // if (camera.position.x > -150) {
-        //     camera.position.x -= moveDistance * 0.6;
-        //     if (camera.rotation.z > -5 * Math.PI / 180) {
-        //         camera.rotation.z -= 0.2 * Math.PI / 180;
-        //     }
-        // }
     }
     if (keyboard.pressed("right") || keyboard.pressed("D")) {
         if (movingCube.position.x < 270)
-            // movingCube.position.x += moveDistance;
             movingCube.position.x += zOrientation;
-        // if (camera.position.x < 150) {
-        //     camera.position.x += moveDistance * 0.6;
-        //     if (camera.rotation.z < 5 * Math.PI / 180) {
-        //         camera.rotation.z += 0.2 * Math.PI / 180;
-        //     }
-        // }
     }
 
     var originPoint = movingCube.position.clone();
@@ -252,15 +247,13 @@ window.onload = () => {
         interval = setInterval(function(){
           displayCounter();
         },1000);
-
       }
+
 
         if(previousValue !== state.zOri){
           // zOrientation = state.zOri * 10;
           difference = state.zOri - previousValue;
           zOrientation = state.zOri * 15
-          console.log(movingCube.position.x)
-
         }
         previousValue = state.zOri
         // var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );
