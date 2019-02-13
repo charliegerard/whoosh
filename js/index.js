@@ -239,6 +239,8 @@ window.onload = () => {
       if(!bluetoothConnected){
         bluetoothConnected = true;
         connectButton.classList.add('fade-out');
+        const title = document.getElementsByClassName('title')[0];
+        title.classList.add('fade-out');
 
         interval = setInterval(function(){
           displayCounter();
