@@ -94,7 +94,6 @@ function init() {
     scene.add(movingCube);
 
     renderer.render(scene, camera);
-
 }
 
 function animate() {
@@ -110,25 +109,22 @@ function update() {
 
     movingCube.position.x -= zOrientation;
 
-    if(movingCube.position.x > 50 && zOrientation < 0){
+    if(movingCube.position.x > 75 && zOrientation < 0){
       movingCube.position.x += zOrientation;
     }
-    if(movingCube.position.x < -50 && zOrientation < 0){
-      console.log('boooooom')
-      movingCube.position.x -= zOrientation;
+    if(movingCube.position.x < -75 && zOrientation > 0){
+      movingCube.position.x += zOrientation;
     }
 
-    // console.log(zOrientation)
 
-
-    if (keyboard.pressed("left") || keyboard.pressed("A")) {
-        if (movingCube.position.x > -270)
-            movingCube.position.x -= zOrientation;
-    }
-    if (keyboard.pressed("right") || keyboard.pressed("D")) {
-        if (movingCube.position.x < 270)
-            movingCube.position.x += zOrientation;
-    }
+    // if (keyboard.pressed("left") || keyboard.pressed("A")) {
+    //     if (movingCube.position.x > -270)
+    //         movingCube.position.x -= zOrientation;
+    // }
+    // if (keyboard.pressed("right") || keyboard.pressed("D")) {
+    //     if (movingCube.position.x < 270)
+    //         movingCube.position.x += zOrientation;
+    // }
 
     var originPoint = movingCube.position.clone();
 
