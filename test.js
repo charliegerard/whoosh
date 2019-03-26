@@ -75,3 +75,4 @@ function generateHeight( width, height ) {
   }
   return data;
 }
+

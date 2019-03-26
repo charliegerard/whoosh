@@ -66,26 +66,11 @@ function init() {
     gridHelper.position.y = -50;
     scene.add( gridHelper );
 
-    // geometry = new THREE.Geometry();
-    // geometry.vertices.push(new THREE.Vector3(-250, -1, -3000));
-    // geometry.vertices.push(new THREE.Vector3(-300, -1, 200));
-    // material = new THREE.LineBasicMaterial({
-    //     color: 0x11e8bb, linewidth: 5, fog: true
-    // });
-    // var line1 = new THREE.Line(geometry, material);
-    // scene.add(line1);
-    // geometry = new THREE.Geometry();
-    // geometry.vertices.push(new THREE.Vector3(250, -1, -3000));
-    // geometry.vertices.push(new THREE.Vector3(300, -1, 200));
-    // var line2 = new THREE.Line(geometry, material);
-    // scene.add(line2);
-
     var cubeGeometry = new THREE.CubeGeometry(50, 25, 60, 5, 5, 5);
     var wireMaterial = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
         wireframe: true
     });
-
 
     movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
     //            movingCube = new THREE.Mesh(cubeGeometry, material);
@@ -115,16 +100,6 @@ function update() {
     if(movingCube.position.x < -75 && zOrientation > 0){
       movingCube.position.x += zOrientation;
     }
-
-
-    // if (keyboard.pressed("left") || keyboard.pressed("A")) {
-    //     if (movingCube.position.x > -270)
-    //         movingCube.position.x -= zOrientation;
-    // }
-    // if (keyboard.pressed("right") || keyboard.pressed("D")) {
-    //     if (movingCube.position.x < 270)
-    //         movingCube.position.x += zOrientation;
-    // }
 
     var originPoint = movingCube.position.clone();
 
@@ -183,7 +158,6 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-
 function makeRandomCube() {
     var a = 1 * 50,
         b = getRandomInt(1, 3) * 50,
@@ -191,13 +165,12 @@ function makeRandomCube() {
     var geometry = new THREE.CubeGeometry(a, b, c);
     var material = new THREE.MeshBasicMaterial({
         color: Math.random() * 0xffffff,
-        size: 3
+        size: 3,
     });
-
 
     var object = new THREE.Mesh(geometry, material);
     var box = new THREE.BoxHelper(object);
-    //            box.material.color.setHex(Math.random() * 0xffffff);
+        // box.material.color.setHex(Math.random() * 0xffffff);
     box.material.color.setHex(0xff0000);
 
     box.position.x = getRandomArbitrary(-250, 250);
@@ -246,7 +219,6 @@ window.onload = () => {
           displayCounter();
         },1000);
       }
-
 
         if(previousValue !== state.zOri){
           // zOrientation = state.zOri * 10;
