@@ -1,78 +1,120 @@
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 500);
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
+let scene;
+let camera;
+let renderer;
+let simplex;
+let plane;
+let geometry;
+let xZoom;
+let yZoom;
+let noiseStrength;
 
-var data = generateHeight( 1024, 1024 );
-
-camera.position.z = 400;
-camera.position.y = 300;
-camera.rotation.x = 200;
-
-// Without the light, the grid isn't visible at all
-light = new THREE.PointLight();
-light.position.set(200, 100, 150);
-var lightSize = 30;
-lightHelper = new THREE.PointLightHelper(light, lightSize);
-scene.add(light);
-scene.add(lightHelper);
-
-var grid = new THREE.GridHelper( 200, 40, 0x91FCFD, 0x91FCFD );
-grid.position.y = -150;
-scene.add(grid);
-
-
-// var geometry = new THREE.Geometry();
-// geometry.vertices.push(new THREE.Vector3( -500, 0, 0 ) );
-// geometry.vertices.push(new THREE.Vector3( 500, 0, 0 ) );
-// linesMaterial = new THREE.LineBasicMaterial( { color: 0x91FCFD, opacity: .2, linewidth: .1 } );
-
-// for ( var i = 0; i <= 20; i ++ ) {
-//     var line = new THREE.Line( geometry, linesMaterial );
-//     line.position.z = ( i * 50 ) - 500;
-//     scene.add( line );
-
-//     var line = new THREE.Line( geometry, linesMaterial );
-//     line.position.x = ( i * 50 ) - 500;
-//     line.rotation.y =  90 * Math.PI / 180;
-//     // line.position.y =  -150;
-//     // line.rotation.z =  Math.PI / 180;
-//     scene.add( line );
-// }
-
-var material = new THREE.MeshPhongMaterial( {color: "#2194ce", shading: THREE.FlatShading, wireframe: true}  );
-var quality = 16, step = 1024 / quality;
-var geometry = new THREE.PlaneGeometry( 3000, 3000, quality - 1, quality - 1 );
-
-geometry.rotateX(45);
-
-for ( var i = 0, l = geometry.vertices.length; i < l; i ++ ) {
-  var x = i % quality, y = Math.floor( i / quality );
-  geometry.vertices[ i ].y = data[ ( x * step ) + ( y * step ) * 1024 ] * 2 - 128;
+function setup() {
+  setupNoise();
+  setupScene();
+  setupCamera();
+  setupRenderer();
+  setupPlane();
+  setupLights();
+  setupEventListeners();
 }
 
-mesh = new THREE.Mesh( geometry, material );
-mesh.position.y = -150;
-scene.add( mesh );
-
-function render() {
-  requestAnimationFrame( render );
-  renderer.render( scene, camera );
+function setupNoise() {
+  // By zooming y more than x, we get the
+  // appearence of flying along a valley
+  xZoom = 7;
+  yZoom = 15;
+  noiseStrength = 1.5;
+  simplex = new SimplexNoise();
 }
-render();
 
+function setupScene() {
+  scene = new THREE.Scene();
+}
 
-function generateHeight( width, height ) {
-  var data = new Uint8Array( width * height ), perlin = new ImprovedNoise(),
-  size = width * height, quality = 2, z = Math.random() * 100;
-  for ( var j = 0; j < 4; j ++ ) {
-    quality *= 4;
-    for ( var i = 0; i < size; i ++ ) {
-      var x = i % width, y = ~~ ( i / width );
-      data[ i ] += Math.abs( perlin.noise( x / quality, y / quality, z ) * 0.5 ) * quality + 10;
+function setupCamera() {
+  let res = window.innerWidth / window.innerHeight;
+  camera = new THREE.PerspectiveCamera(75, res, 0.1, 1000);
+  camera.position.x = 0;
+  camera.position.y = -20;
+  camera.position.z = 1;
+
+  camera.rotation.x = -250;
+  
+  let controls = new THREE.OrbitControls(camera);
+}
+
+function setupRenderer() {
+  renderer = new THREE.WebGLRenderer({ 
+    antialias: true
+  });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+}
+
+function setupPlane() {
+  let side = 120;
+  geometry = new THREE.PlaneGeometry(40, 40, side, side);
+  let material = new THREE.MeshStandardMaterial({
+    roughness: 0.8,
+    color: new THREE.Color(0x91FCFD),
+    // wireframe: true 
+  });
+  plane = new THREE.Mesh(geometry, material);
+  plane.castShadow = true;
+  plane.receiveShadow = true;
+
+  scene.add(plane);
+}
+
+function setupLights() {
+  let ambientLight = new THREE.AmbientLight(0x0c0c0c);
+  scene.add(ambientLight);
+  
+  let spotLight = new THREE.SpotLight(0xcccccc);
+  spotLight.position.set(-30, 60, 60);
+  spotLight.castShadow = true;
+  scene.add(spotLight);
+}
+
+function setupEventListeners() {
+  window.addEventListener("resize", onWindowResize);
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function draw() {
+  requestAnimationFrame(draw);
+  let offset = Date.now() * 0.0004;
+  adjustVertices(offset);
+	adjustCameraPos(offset);
+  renderer.render(scene, camera);
+}
+
+function adjustVertices(offset) {
+  for (let i = 0; i < plane.geometry.vertices.length; i++) {
+    let vertex = plane.geometry.vertices[i];
+    let x = vertex.x / xZoom;
+    let y = vertex.y / yZoom;
+    
+    if(vertex.x < -2 || vertex.x > 2){
+      let noise = simplex.noise2D(x, y + offset) * noiseStrength; 
+      vertex.z = noise;
     }
   }
-  return data;
+  geometry.verticesNeedUpdate = true;
+  geometry.computeVertexNormals();
 }
 
+function adjustCameraPos(offset) {  
+  let x = camera.position.x / xZoom;
+  let y = camera.position.y / yZoom;
+  let noise = simplex.noise2D(x, y + offset) * noiseStrength + 1.5; 
+  // camera.position.z = noise;
+}
+
+setup();
+draw();
