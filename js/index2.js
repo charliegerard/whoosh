@@ -1,4 +1,6 @@
-var container, controls;
+/* 3D skateboard model from https://poly.google.com/view/7Dfn4VtTCWY */
+
+var container;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock;
 
@@ -13,20 +15,12 @@ var id = 0;
 var crashId = " ";
 var lastCrashId = " ";
 
-let scene;
-let camera;
-let renderer;
-let simplex;
-let plane;
-let geometry;
-let xZoom;
-let yZoom;
-let noiseStrength;
+let scene, camera, renderer, simplex, plane, geometry, xZoom, yZoom, noiseStrength;
+let skateboard;
 
 var bluetoothConnected = false;
-
+var gameStarted = false;
 var zOrientation = 0;
-
 let counter = 3;
 
 setup();
@@ -36,6 +30,7 @@ draw();
 function setup(){
 	setupNoise();
 	setupScene();
+	setup3DModel();
 	setupCamera();
 	setupRenderer();
 	setupPlane();
@@ -59,13 +54,22 @@ function setupScene() {
 function setupCamera() {
   let res = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(75, res, 0.1, 1000);
-  camera.position.x = 0;
-  camera.position.y = -20;
-  camera.position.z = 1;
-
+	camera.position.set(0, -20, 1);
   camera.rotation.x = -300;
-  
-  let controls = new THREE.OrbitControls(camera);
+}
+
+function setup3DModel(){
+	var loader = new THREE.OBJLoader();
+	loader.load(
+		'assets/Skateboard.obj',
+		function ( object ) {
+			skateboard = object;
+			skateboard.position.set(0, -18.7, 0);
+			skateboard.rotation.set(2, 1.58, -0.5);
+			skateboard.scale.set(0.3, 0.3, 0.3);
+			scene.add( skateboard );
+		}
+	);
 }
 
 function setupRenderer() {
@@ -99,7 +103,6 @@ function setupPlane() {
 	// const wireframeMaterial = new THREE.MeshStandardMaterial( { color: new THREE.Color(0x91FCFD), wireframe: true } );
 	// const wireframe = new THREE.LineSegments( wireframeGeometry, wireframeMaterial );
 
-
 	let material = new THREE.MeshStandardMaterial({
 		color: new THREE.Color('rgb(16,28,89)'),
 	});
@@ -108,21 +111,17 @@ function setupPlane() {
   plane.castShadow = true;
 	plane.receiveShadow = true;
 	scene.add(plane);
-	
 
 	// pink: rgb(195,44,110)
 	// blue: rgb(93, 159, 153)
 
-
 	// wireframe helper
-	
 	const wireframeGeometry = new THREE.WireframeGeometry( geometry );
 	const wireframeMaterial = new THREE.LineBasicMaterial( { color: 'rgb(93,159,153)' } );
 	const wireframe = new THREE.LineSegments( wireframeGeometry, wireframeMaterial );
 
 	plane.add( wireframe );
 }
-
 
 function setupLights() {
   // let ambientLight = new THREE.AmbientLight(0x0c0c0c);
@@ -146,7 +145,7 @@ function onWindowResize() {
 
 function init() {
     // scene.fog = new THREE.FogExp2( new THREE.Color("rgb(0,0,0)"), 0.0004 );
-    // scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
+    scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
 
     container = document.getElementById("ThreeJS");
     container.appendChild(renderer.domElement);
@@ -172,24 +171,20 @@ function init() {
     movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
     //            movingCube = new THREE.Mesh(cubeGeometry, material);
     //            movingCube = new THREE.BoxHelper(movingCube);
-    movingCube.position.set(0, -18.8, 0.1);
+		movingCube.position.set(0, -18.8, 0.1);
     scene.add(movingCube);
 
     renderer.render(scene, camera);
 }
 
-function animate() {
-  requestAnimationFrame(animate);
-  update();
-  renderer.render(scene, camera);
-}
-
-
 function draw() {
   requestAnimationFrame(draw);
   let offset = Date.now() * 0.0004;
   adjustVertices(offset);
-	adjustCameraPos(offset);
+	// adjustCameraPos(offset);
+	if(gameStarted){
+		update()
+	}
   renderer.render(scene, camera);
 }
 
@@ -208,109 +203,142 @@ function adjustVertices(offset) {
   geometry.computeVertexNormals();
 }
 
-function adjustCameraPos(offset) {  
-  let x = camera.position.x / xZoom;
-  let y = camera.position.y / yZoom;
-  let noise = simplex.noise2D(x, y + offset) * noiseStrength + 1.5; 
+// function adjustCameraPos(offset) {  
+  // let x = camera.position.x / xZoom;
+  // let y = camera.position.y / yZoom;
+  // let noise = simplex.noise2D(x, y + offset) * noiseStrength + 1.5; 
   // camera.position.z = noise;
-}
+// }
 
 function update() {
-    var delta = clock.getDelta();
-    var moveDistance = 200 * delta;
-    var rotateAngle = Math.PI / 2 * delta;
+	var delta = clock.getDelta();
+	var moveDistance = 200 * delta;
+	var rotateAngle = Math.PI / 2 * delta;
 
-    movingCube.position.x -= zOrientation;
+	movingCube.position.x -= zOrientation;
 
-    if(movingCube.position.x > 75 && zOrientation < 0){
-      movingCube.position.x += zOrientation;
-    }
-    if(movingCube.position.x < -75 && zOrientation > 0){
-      movingCube.position.x += zOrientation;
-    }
+	if(movingCube.position.x > 2 && zOrientation < 0){
+		movingCube.position.x += zOrientation;
+	}
+	if(movingCube.position.x < -2 && zOrientation > 0){
+		movingCube.position.x += zOrientation;
+	}
 
-    var originPoint = movingCube.position.clone();
+	var originPoint = movingCube.position.clone();
 
-    for (var vertexIndex = 0; vertexIndex < movingCube.geometry.vertices.length; vertexIndex++) {
-        var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
-        var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
-        var directionVector = globalVertex.sub(movingCube.position);
+	for (var vertexIndex = 0; vertexIndex < movingCube.geometry.vertices.length; vertexIndex++) {
+		var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
+		var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
+		var directionVector = globalVertex.sub(movingCube.position);
 
-        var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
-        var collisionResults = ray.intersectObjects(collideMeshList);
-        if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-            crash = true;
-            crashId = collisionResults[0].object.name;
-            break;
-        }
-        crash = false;
-    }
+		var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+		var collisionResults = ray.intersectObjects(collideMeshList);
+		if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+				crash = true;
+				crashId = collisionResults[0].object.name;
+				break;
+		}
+		crash = false;
+	}
 
-    if (crash) {
-        movingCube.material.color.setHex(0x346386);
-        console.log("Crash");
-        if (crashId !== lastCrashId) {
-            score -= 100;
-            lastCrashId = crashId;
-        }
+	if (crash) {
+		movingCube.material.color.setHex(0x346386);
+		console.log("Crash");
+		if (crashId !== lastCrashId) {
+			score -= 100;
+			lastCrashId = crashId;
+		}
+		document.getElementById('explode_sound').play()
+	} else {
+		movingCube.material.color.setHex(0x00ff00);
+	}
 
-        document.getElementById('explode_sound').play()
-    } else {
-        movingCube.material.color.setHex(0x00ff00);
-    }
+	if (Math.random() < 0.03 && cubes.length < 30) {
+		makeRandomCube();
+	}
 
-    if (Math.random() < 0.03 && cubes.length < 30) {
-        makeRandomCube();
-    }
+  for (i = 0; i < cubes.length; i++) {
+		// if (cubes[i].position.z > camera.position.z) {
+			// scene.remove(cubes[i]);
+			// cubes.splice(i, 1);
+			// collideMeshList.splice(i, 1);
+			// cubes[i].position.y -= 0.1;
+		// } else {
+			// cubes[i].position.z += 10;
 
-    for (i = 0; i < cubes.length; i++) {
-        if (cubes[i].position.z > camera.position.z) {
-            scene.remove(cubes[i]);
-            cubes.splice(i, 1);
-            collideMeshList.splice(i, 1);
-        } else {
-            cubes[i].position.z += 10;
-        }
-        //                renderer.render(scene, camera);
-    }
+			cubes[0].position.y -= 0.1;
+			console.log(cubes[0].position.y)
+		// }
+		// renderer.render(scene, camera);
+	}
 
-    score += 0.1;
-    scoreText.innerText = "Score:" + Math.floor(score);
+  score += 0.1;
+  scoreText.innerText = "Score:" + Math.floor(score);
 }
 
 function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
+  return Math.random() * (max - min) + min;
 }
 
 function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function makeRandomCube() {
-    var a = 1 * 50,
-        b = getRandomInt(1, 3) * 50,
-        c = 1 * 50;
-    var geometry = new THREE.CubeGeometry(a, b, c);
-    var material = new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xffffff,
-        size: 3,
-    });
+    // var a = 1 * 50,
+    //     b = getRandomInt(1, 3) * 50,
+    //     c = 1 * 50;
+    // var geometry = new THREE.CubeGeometry(a, b, c);
+    // var material = new THREE.MeshBasicMaterial({
+    //     color: Math.random() * 0xffffff,
+    //     size: 3,
+    // });
 
-    var object = new THREE.Mesh(geometry, material);
-    var box = new THREE.BoxHelper(object);
-        // box.material.color.setHex(Math.random() * 0xffffff);
-    box.material.color.setHex(0xff0000);
+    // var object = new THREE.Mesh(geometry, material);
+    // var box = new THREE.BoxHelper(object);
+    //     // box.material.color.setHex(Math.random() * 0xffffff);
+    // box.material.color.setHex(0xff0000);
 
-    box.position.x = getRandomArbitrary(-250, 250);
-    box.position.y = 1 + b / 2;
-    // box.position.z = getRandomArbitrary(-800, -1200);
-    box.position.z = getRandomArbitrary(-3000, -5000);
-    cubes.push(box);
-    box.name = "box_" + id;
-    id++;
-    collideMeshList.push(box);
+    // box.position.x = getRandomArbitrary(-250, 250);
+    // box.position.y = 1 + b / 2;
+    // // box.position.z = getRandomArbitrary(-800, -1200);
+    // box.position.z = getRandomArbitrary(-3000, -5000);
+    // cubes.push(box);
+    // box.name = "box_" + id;
+    // id++;
+    // collideMeshList.push(box);
 
-    scene.add(box);
+		// scene.add(box);
+		
+		var a = 1,
+		b = getRandomInt(1, 3),
+		c = 1;
+		var geometry = new THREE.CubeGeometry(a, b, c);
+		var material = new THREE.MeshBasicMaterial({
+				color: Math.random() * 0xffffff,
+				size: 3,
+		});
+
+		var object = new THREE.Mesh(geometry, material);
+		var box = new THREE.BoxHelper(object);
+				// box.material.color.setHex(Math.random() * 0xffffff);
+		box.material.color.setHex(0xff0000);
+
+		// box.position.x = getRandomArbitrary(-2, 2);
+		// box.position.y = 1 + b / 2;
+		// box.position.y = -18.5;
+		// box.position.z = getRandomArbitrary(-800, -1200);
+		// box.position.z = getRandomArbitrary(0, 2);
+
+
+
+		box.position.set(0, 0, 1);
+		cubes.push(box);
+		box.name = "box_" + id;
+		id++;
+		collideMeshList.push(box);
+
+		scene.add(box);
 }
 
 function displayCounter(){
@@ -320,8 +348,8 @@ function displayCounter(){
     counter--;
   } else if(counter === 0){
     clearInterval(interval);
-    counterDiv.classList.add('fade-out');
-    animate();
+		counterDiv.classList.add('fade-out');
+		gameStarted = true;
   }
 }
 
@@ -352,7 +380,7 @@ window.onload = () => {
           // zOrientation = state.zOri * 10;
           difference = state.zOri - previousValue;
           zOrientation = state.zOri * 15
-        }
+				}
         previousValue = state.zOri
         // var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );
     } );
