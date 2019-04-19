@@ -174,8 +174,8 @@ function init() {
     //            movingCube = new THREE.Mesh(cubeGeometry, material);
     //            movingCube = new THREE.BoxHelper(movingCube);
 		movingCube.position.set(0, -18.8, 0.1);
-    scene.add(movingCube);
-
+		scene.add(movingCube);
+		
     renderer.render(scene, camera);
 }
 
@@ -196,7 +196,7 @@ function adjustVertices(offset) {
     let x = vertex.x / xZoom;
     let y = vertex.y / yZoom;
     
-    if(vertex.x < -2 || vertex.x > 2){
+    if(vertex.x < -2.5 || vertex.x > 2.5){
       let noise = simplex.noise2D(x, y + offset) * noiseStrength; 
       vertex.z = noise;
     }
@@ -261,16 +261,13 @@ function update() {
 
   for (i = 0; i < cubes.length; i++) {
 		// if (cubes[i].position.z > camera.position.z) {
-			// scene.remove(cubes[i]);
-			// cubes.splice(i, 1);
-			// collideMeshList.splice(i, 1);
-			// cubes[i].position.y -= 0.1;
-		// } else {
-			// cubes[i].position.z += 10;
-
-			cubes[0].position.y -= 0.1;
-			console.log(cubes[0].position.y)
-		// }
+		if (cubes[i].position.y < -20) {
+			scene.remove(cubes[i]);
+			cubes.splice(i, 1);
+			collideMeshList.splice(i, 1);
+		} else {
+			cubes[i].position.y -= 0.05;
+		}
 		// renderer.render(scene, camera);
 	}
 
@@ -312,34 +309,23 @@ function makeRandomCube() {
 
 		// scene.add(box);
 		
-		var a = 1,
-		b = getRandomInt(1, 3),
-		c = 1;
-		var geometry = new THREE.CubeGeometry(a, b, c);
+		var geometry = new THREE.CubeGeometry(.5, .5, getRandomInt(1, 3) * .5);
 		var material = new THREE.MeshBasicMaterial({
 				color: Math.random() * 0xffffff,
 				size: 3,
 		});
 
 		var object = new THREE.Mesh(geometry, material);
-		var box = new THREE.BoxHelper(object);
-				// box.material.color.setHex(Math.random() * 0xffffff);
-		box.material.color.setHex(0xff0000);
+		object.position.x = getRandomArbitrary(-2, 2);
+		object.position.y = getRandomArbitrary(50, 0);
+		object.position.z = 0;
 
-		// box.position.x = getRandomArbitrary(-2, 2);
-		// box.position.y = 1 + b / 2;
-		// box.position.y = -18.5;
-		// box.position.z = getRandomArbitrary(-800, -1200);
-		// box.position.z = getRandomArbitrary(0, 2);
-
-
-		box.position.set(0, 0, 1);
-		cubes.push(box);
-		box.name = "box_" + id;
+		cubes.push(object);
+		object.name = "box_" + id;
 		id++;
-		collideMeshList.push(box);
+		collideMeshList.push(object);
 
-		scene.add(box);
+		scene.add(object);
 }
 
 function displayCounter(){
