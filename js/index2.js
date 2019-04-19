@@ -63,14 +63,15 @@ function setupCamera() {
   camera.position.y = -20;
   camera.position.z = 1;
 
-  camera.rotation.x = -250;
+  camera.rotation.x = -300;
   
   let controls = new THREE.OrbitControls(camera);
 }
 
 function setupRenderer() {
   renderer = new THREE.WebGLRenderer({ 
-    antialias: true
+		antialias: true,
+		alpha: true
   });
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.autoClear = false;
@@ -83,22 +84,49 @@ function setupRenderer() {
 function setupPlane() {
   let side = 120;
   geometry = new THREE.PlaneGeometry(40, 40, side, side);
-  let material = new THREE.MeshStandardMaterial({
-    roughness: 0.8,
-    color: new THREE.Color(0x91FCFD),
-    // wireframe: true 
-  });
-  plane = new THREE.Mesh(geometry, material);
-  plane.castShadow = true;
-  plane.receiveShadow = true;
+  // let material = new THREE.MeshStandardMaterial({
+  //   roughness: 0.8,
+  //   color: new THREE.Color(0x91FCFD),
+	// 	wireframe: true,
+	// });
+	// let material = new THREE.MeshNormalMaterial({
+	// 	  roughness: 0.8,
+	// 	  color: new THREE.Color(0x91FCFD),
+	// 		wireframe: true,
+	// 	});
+	
+	// const wireframeGeometry = new THREE.WireframeGeometry( geometry );
+	// const wireframeMaterial = new THREE.MeshStandardMaterial( { color: new THREE.Color(0x91FCFD), wireframe: true } );
+	// const wireframe = new THREE.LineSegments( wireframeGeometry, wireframeMaterial );
 
-  scene.add(plane);
+
+	let material = new THREE.MeshStandardMaterial({
+		color: new THREE.Color('rgb(16,28,89)'),
+	});
+
+	plane = new THREE.Mesh(geometry, material);
+  plane.castShadow = true;
+	plane.receiveShadow = true;
+	scene.add(plane);
+	
+
+	// pink: rgb(195,44,110)
+	// blue: rgb(93, 159, 153)
+
+
+	// wireframe helper
+	
+	const wireframeGeometry = new THREE.WireframeGeometry( geometry );
+	const wireframeMaterial = new THREE.LineBasicMaterial( { color: 'rgb(93,159,153)' } );
+	const wireframe = new THREE.LineSegments( wireframeGeometry, wireframeMaterial );
+
+	plane.add( wireframe );
 }
 
 
 function setupLights() {
-  let ambientLight = new THREE.AmbientLight(0x0c0c0c);
-  scene.add(ambientLight);
+  // let ambientLight = new THREE.AmbientLight(0x0c0c0c);
+  // scene.add(ambientLight);
   
   let spotLight = new THREE.SpotLight(0xcccccc);
   spotLight.position.set(-30, 60, 60);
@@ -118,19 +146,19 @@ function onWindowResize() {
 
 function init() {
     // scene.fog = new THREE.FogExp2( new THREE.Color("rgb(0,0,0)"), 0.0004 );
-    scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
+    // scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
 
     container = document.getElementById("ThreeJS");
     container.appendChild(renderer.domElement);
 
     THREEx.WindowResize(renderer, camera);
 
-    var light = new THREE.PointLight();
-    light.position.set(200, 200, 100);
-    var lightSize = 30;
-    lightHelper = new THREE.PointLightHelper(light, lightSize);
-    scene.add(light);
-    scene.add(lightHelper);
+    // var light = new THREE.PointLight();
+    // light.position.set(200, 200, 100);
+    // var lightSize = 20;
+    // lightHelper = new THREE.PointLightHelper(light, lightSize);
+    // scene.add(light);
+    // scene.add(lightHelper);
 
     var size = window.innerWidth * 2;
     var divisions = 100;
@@ -138,7 +166,7 @@ function init() {
     var cubeGeometry = new THREE.CubeGeometry(.5, .5, .2, 5, 5, 5);
     var wireMaterial = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
-        wireframe: true
+				wireframe: true
     });
 
     movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
