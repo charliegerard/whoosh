@@ -29,8 +29,8 @@ draw();
 
 function setup(){
 	setupNoise();
-	setupScene();
 	setup3DModel();
+	setupScene();
 	setupCamera();
 	setupRenderer();
 	setupPlane();
@@ -43,7 +43,8 @@ function setupNoise() {
   // appearence of flying along a valley
   xZoom = 7;
   yZoom = 15;
-  noiseStrength = 1.5;
+  // noiseStrength = 1.5;
+  noiseStrength = 3;
   simplex = new SimplexNoise();
 }
 
@@ -68,6 +69,7 @@ function setup3DModel(){
 			skateboard.rotation.set(2, 1.58, -0.5);
 			skateboard.scale.set(0.3, 0.3, 0.3);
 			scene.add( skateboard );
+			renderer.render(scene, camera);
 		}
 	);
 }
@@ -178,11 +180,11 @@ function init() {
 }
 
 function draw() {
-  requestAnimationFrame(draw);
   let offset = Date.now() * 0.0004;
   adjustVertices(offset);
 	// adjustCameraPos(offset);
 	if(gameStarted){
+		requestAnimationFrame(draw);
 		update()
 	}
   renderer.render(scene, camera);
@@ -331,7 +333,6 @@ function makeRandomCube() {
 		// box.position.z = getRandomArbitrary(0, 2);
 
 
-
 		box.position.set(0, 0, 1);
 		cubes.push(box);
 		box.name = "box_" + id;
@@ -350,6 +351,7 @@ function displayCounter(){
     clearInterval(interval);
 		counterDiv.classList.add('fade-out');
 		gameStarted = true;
+		draw();
   }
 }
 
