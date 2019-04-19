@@ -65,7 +65,7 @@ function setup3DModel(){
 		'assets/Skateboard.obj',
 		function ( object ) {
 			skateboard = object;
-			skateboard.position.set(0, -18.7, 0);
+			skateboard.position.set(0, -19, -0.1);
 			skateboard.rotation.set(2, 1.58, -0.5);
 			skateboard.scale.set(0.3, 0.3, 0.3);
 			scene.add( skateboard );
@@ -152,7 +152,7 @@ function init() {
     container = document.getElementById("ThreeJS");
     container.appendChild(renderer.domElement);
 
-    THREEx.WindowResize(renderer, camera);
+    // THREEx.WindowResize(renderer, camera);
 
     // var light = new THREE.PointLight();
     // light.position.set(200, 200, 100);
@@ -170,11 +170,9 @@ function init() {
 				wireframe: true
     });
 
-    movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
-    //            movingCube = new THREE.Mesh(cubeGeometry, material);
-    //            movingCube = new THREE.BoxHelper(movingCube);
-		movingCube.position.set(0, -18.8, 0.1);
-		scene.add(movingCube);
+    // movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
+		// movingCube.position.set(0, -18.8, 0.1);
+		// scene.add(movingCube);
 		
     renderer.render(scene, camera);
 }
@@ -217,21 +215,23 @@ function update() {
 	var moveDistance = 200 * delta;
 	var rotateAngle = Math.PI / 2 * delta;
 
-	movingCube.position.x -= zOrientation;
+	skateboard.position.x -= zOrientation;
 
-	if(movingCube.position.x > 2 && zOrientation < 0){
-		movingCube.position.x += zOrientation;
+	if(skateboard.position.x > 2 && zOrientation < 0){
+		skateboard.position.x += zOrientation;
 	}
-	if(movingCube.position.x < -2 && zOrientation > 0){
-		movingCube.position.x += zOrientation;
+	if(skateboard.position.x < -2 && zOrientation > 0){
+		skateboard.position.x += zOrientation;
 	}
 
-	var originPoint = movingCube.position.clone();
+	let skateboardGeometry = new THREE.Geometry().fromBufferGeometry( skateboard.children[0].geometry );
 
-	for (var vertexIndex = 0; vertexIndex < movingCube.geometry.vertices.length; vertexIndex++) {
-		var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
-		var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
-		var directionVector = globalVertex.sub(movingCube.position);
+	var originPoint = skateboard.position.clone();
+
+	for (var vertexIndex = 0; vertexIndex < skateboardGeometry.vertices.length; vertexIndex++) {
+		var localVertex = skateboardGeometry.vertices[vertexIndex].clone();
+		var globalVertex = localVertex.applyMatrix4(skateboard.matrix);
+		var directionVector = globalVertex.sub(skateboard.position);
 
 		var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
 		var collisionResults = ray.intersectObjects(collideMeshList);
@@ -244,7 +244,7 @@ function update() {
 	}
 
 	if (crash) {
-		movingCube.material.color.setHex(0x346386);
+		// skateboard.material.color.setHex(0x346386);
 		console.log("Crash");
 		if (crashId !== lastCrashId) {
 			score -= 100;
@@ -252,7 +252,7 @@ function update() {
 		}
 		document.getElementById('explode_sound').play()
 	} else {
-		movingCube.material.color.setHex(0x00ff00);
+		// skateboardGeometry.material.color.setHex(0x00ff00);
 	}
 
 	if (Math.random() < 0.03 && cubes.length < 30) {
@@ -350,7 +350,6 @@ window.onload = () => {
   var difference;
 
   connectButton.onclick = function(){
-
     var controller = new DaydreamController();
     controller.onStateChange( function ( state ) {
       if(!bluetoothConnected){
@@ -364,13 +363,13 @@ window.onload = () => {
         },1000);
       }
 
-        if(previousValue !== state.zOri){
-          // zOrientation = state.zOri * 10;
-          difference = state.zOri - previousValue;
-          zOrientation = state.zOri * 15
-				}
-        previousValue = state.zOri
-        // var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );
+			if(previousValue !== state.zOri){
+				// zOrientation = state.zOri * 10;
+				difference = state.zOri - previousValue;
+				zOrientation = state.zOri * 15
+			}
+			previousValue = state.zOri
+			// var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );
     } );
     controller.connect();
   }

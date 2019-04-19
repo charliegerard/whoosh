@@ -11,3 +11,5 @@ Interactive experiment connecting a Daydream controller to the web to provide so
 - [] Add music
 - [x] Check 3D model for hoverboard
 - [] Style obstacles
+- [x] Replace cube with skateboard
+- [] Style sky
