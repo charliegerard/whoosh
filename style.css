@@ -29,7 +29,14 @@ canvas { width: 100%; height: 100%;}
 
 
 body{
-  background: linear-gradient(to bottom,  rgb(12,28,90) 0%,#5a008a 100%);
+  /* background: linear-gradient(to bottom,  rgb(12,28,90) 0%,#5a008a 100%); */
+  background: repeating-linear-gradient(
+    0deg,
+    rgb(12,28,90) 0%,
+    #5a008a 20%,
+    rgb(12,28,90) 50%,
+    #5a008a 100%
+  );;
   position: absolute;
   width: 100%;
   height: 100%;

@@ -68,6 +68,16 @@ function setup3DModel(){
 			skateboard.position.set(0, -19, -0.1);
 			skateboard.rotation.set(2, 1.58, -0.5);
 			skateboard.scale.set(0.3, 0.3, 0.3);
+	
+			object.traverse( function ( child ) {
+				let material = new THREE.MeshStandardMaterial({
+					color: new THREE.Color('rgb(195,44,110)'),
+				});
+        if ( child instanceof THREE.Mesh ) {
+          child.material = material;
+        }
+		} );
+		
 			scene.add( skateboard );
 			renderer.render(scene, camera);
 		}
