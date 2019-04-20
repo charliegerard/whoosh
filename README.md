@@ -6,7 +6,7 @@ Interactive experiment connecting a Daydream controller to the web to provide so
 
 - [x] Fix color of the terrain
 - [x] Fix color of the background with missing sun
-- [] Add score
+- [x] Add score
 - [x] Make terrain move only after game has started
 - [x] Add music
 - [x] Check 3D model for hoverboard
@@ -15,3 +15,4 @@ Interactive experiment connecting a Daydream controller to the web to provide so
 - [x] Style sky
 - [x] Add postprocessing effect on collision
 - [] Find a way to fade out the sound before the end
+- [] Fix score

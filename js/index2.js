@@ -234,10 +234,6 @@ function adjustVertices(offset) {
 }
 
 function update() {
-	// var delta = clock.getDelta();
-	// var moveDistance = 200 * delta;
-	// var rotateAngle = Math.PI / 2 * delta;
-
 	skateboard.position.x -= zOrientation;
 
 	if(skateboard.position.x > 2 && zOrientation < 0){
@@ -269,16 +265,15 @@ function update() {
 	composer = new THREE.EffectComposer( renderer );
 
 	if (crash) {
-		console.log("Crash");
 		if (crashId !== lastCrashId) {
-			score -= 100;
+			score -= 1;
 			lastCrashId = crashId;
 
 			glitchPass.enabled = true;
 			composer.addPass( glitchPass );
 		}
 
-		document.getElementById('explode_sound').play()
+		document.getElementById('explode_sound').play();
 	} else {
 		glitchPass.enabled = false;
 		composer.addPass( glitchPass );
@@ -289,19 +284,18 @@ function update() {
 	}
 
   for (i = 0; i < cubes.length; i++) {
-		// if (cubes[i].position.z > camera.position.z) {
 		if (cubes[i].position.y < -20) {
 			scene.remove(cubes[i]);
 			cubes.splice(i, 1);
 			collideMeshList.splice(i, 1);
+			//if(!crash){
+				score += 1;
+			//}
 		} else {
 			cubes[i].position.y -= 0.05;
 		}
-		// renderer.render(scene, camera);
 	}
-
-  score += 0.1;
-  scoreText.innerText = "Score:" + Math.floor(score);
+	scoreText.innerText = "Score:" + Math.floor(score);
 }
 
 function getRandomArbitrary(min, max) {
@@ -313,41 +307,23 @@ function getRandomInt(min, max) {
 }
 
 function makeRandomCube() {
-    // var object = new THREE.Mesh(geometry, material);
-    // var box = new THREE.BoxHelper(object);
-    //     // box.material.color.setHex(Math.random() * 0xffffff);
-    // box.material.color.setHex(0xff0000);
+	let material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x009900, shininess: 30, flatShading: true } );
+	let rockGeometry = new THREE.Geometry().fromBufferGeometry( rock.children[0].geometry );
 
-    // box.position.x = getRandomArbitrary(-250, 250);
-    // box.position.y = 1 + b / 2;
-    // // box.position.z = getRandomArbitrary(-800, -1200);
-    // box.position.z = getRandomArbitrary(-3000, -5000);
-    // cubes.push(box);
-    // box.name = "box_" + id;
-    // id++;
-    // collideMeshList.push(box);
+	var object = new THREE.Mesh(rockGeometry, material);
+	object.position.x = getRandomArbitrary(-2, 2);
+	object.position.y = getRandomArbitrary(50, 0);
+	object.position.z = 0;
 
-		// scene.add(box);
-		
-		// var geometry = new THREE.CubeGeometry(.5, .5, getRandomInt(1, 3) * .5);
+	object.scale.set(0.4, 0.4, 0.4);
+	object.rotation.set(2, 1.58, -0.5);
 
-		let material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x009900, shininess: 30, flatShading: true } );
-		let rockGeometry = new THREE.Geometry().fromBufferGeometry( rock.children[0].geometry );
+	cubes.push(object);
+	object.name = "box_" + id;
+	id++;
+	collideMeshList.push(object);
 
-		var object = new THREE.Mesh(rockGeometry, material);
-		object.position.x = getRandomArbitrary(-2, 2);
-		object.position.y = getRandomArbitrary(50, 0);
-		object.position.z = 0;
-
-		object.scale.set(0.4, 0.4, 0.4);
-		object.rotation.set(2, 1.58, -0.5);
-
-		cubes.push(object);
-		object.name = "box_" + id;
-		id++;
-		collideMeshList.push(object);
-
-		scene.add(object);
+	scene.add(object);
 }
 
 function displayCounter(){
