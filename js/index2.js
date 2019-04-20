@@ -26,6 +26,8 @@ var bluetoothConnected = false;
 var gameStarted = false;
 var zOrientation = 0;
 let counter = 3;
+var sound;
+var glitchPass, composer;
 
 setup();
 init();
@@ -36,11 +38,19 @@ function setup(){
 	setup3DModel();
 	setupRockModel();
 	setupScene();
+	setupSound();
 	setupCamera();
 	setupRenderer();
 	setupPlane();
 	setupLights();
 	setupEventListeners();
+}
+
+function setupSound(){
+	sound = new Howl({
+    src: ['assets/Delorean-dynamite-trimmed.m4a'],
+    loop: true,
+  });
 }
 
 function setupNoise() {
@@ -200,7 +210,12 @@ function draw() {
 		requestAnimationFrame(draw);
 		update()
 	}
-  renderer.render(scene, camera);
+	if(composer){
+		composer.render();
+		renderer.render(scene, camera);
+	} else {
+		renderer.render(scene, camera);
+	}
 }
 
 function adjustVertices(offset) {
@@ -250,17 +265,23 @@ function update() {
 		}
 		crash = false;
 	}
+	glitchPass = new THREE.GlitchPass();
+	composer = new THREE.EffectComposer( renderer );
 
 	if (crash) {
-		// skateboard.material.color.setHex(0x346386);
 		console.log("Crash");
 		if (crashId !== lastCrashId) {
 			score -= 100;
 			lastCrashId = crashId;
+
+			glitchPass.enabled = true;
+			composer.addPass( glitchPass );
 		}
+
 		document.getElementById('explode_sound').play()
 	} else {
-		// skateboardGeometry.material.color.setHex(0x00ff00);
+		glitchPass.enabled = false;
+		composer.addPass( glitchPass );
 	}
 
 	if (Math.random() < 0.03 && cubes.length < 10) {
@@ -331,7 +352,7 @@ function makeRandomCube() {
 
 function displayCounter(){
   const counterDiv = document.getElementsByClassName('counter')[0];
-  counterDiv.innerHTML = counter;
+	counterDiv.innerHTML = counter;
   if(counter > 0){
     counter--;
   } else if(counter === 0){
@@ -355,7 +376,9 @@ window.onload = () => {
         bluetoothConnected = true;
         connectButton.classList.add('fade-out');
         const title = document.getElementsByClassName('title')[0];
-        title.classList.add('fade-out');
+				title.classList.add('fade-out');
+				sound.play()
+				sound.fade(0, 1, 3000);
 
         interval = setInterval(function(){
           displayCounter();

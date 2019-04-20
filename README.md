@@ -8,9 +8,10 @@ Interactive experiment connecting a Daydream controller to the web to provide so
 - [x] Fix color of the background with missing sun
 - [] Add score
 - [x] Make terrain move only after game has started
-- [] Add music
+- [x] Add music
 - [x] Check 3D model for hoverboard
 - [x] Style obstacles
 - [x] Replace cube with skateboard
 - [x] Style sky
-- [] Add postprocessing effect on collision
+- [x] Add postprocessing effect on collision
+- [] Find a way to fade out the sound before the end
