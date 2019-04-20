@@ -1,4 +1,8 @@
 /* 3D skateboard model from https://poly.google.com/view/7Dfn4VtTCWY */
+/* Rock model from https://poly.google.com/view/dmRuyy1VXEv */
+
+	// pink: rgb(195,44,110)
+	// blue: rgb(93, 159, 153)
 
 var container;
 var keyboard = new THREEx.KeyboardState();
@@ -16,7 +20,7 @@ var crashId = " ";
 var lastCrashId = " ";
 
 let scene, camera, renderer, simplex, plane, geometry, xZoom, yZoom, noiseStrength;
-let skateboard;
+let skateboard, rock, rockMesh;
 
 var bluetoothConnected = false;
 var gameStarted = false;
@@ -30,6 +34,7 @@ draw();
 function setup(){
 	setupNoise();
 	setup3DModel();
+	setupRockModel();
 	setupScene();
 	setupCamera();
 	setupRenderer();
@@ -76,10 +81,33 @@ function setup3DModel(){
         if ( child instanceof THREE.Mesh ) {
           child.material = material;
         }
-		} );
+			});
 		
 			scene.add( skateboard );
 			renderer.render(scene, camera);
+		}
+	);
+}
+
+function setupRockModel(){
+	var loader = new THREE.OBJLoader();
+	loader.load(
+		'assets/PUSHILIN_rock.obj',
+		function ( object ) {
+			rock = object;
+			rock.position.set(1, -18, -0.1);
+			rock.rotation.set(2, 1.58, -0.5);
+			rock.scale.set(0.4, 0.4, 0.4);
+
+			let material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x009900, shininess: 30, flatShading: true } );
+			rock.traverse( function ( child ) {
+				if ( child instanceof THREE.Mesh ) {
+					rockMesh = child;
+					rockMesh.material = material;
+				}
+			});
+			// scene.add( rock );
+			// renderer.render(scene, camera);
 		}
 	);
 }
@@ -124,10 +152,6 @@ function setupPlane() {
 	plane.receiveShadow = true;
 	scene.add(plane);
 
-	// pink: rgb(195,44,110)
-	// blue: rgb(93, 159, 153)
-
-	// wireframe helper
 	const wireframeGeometry = new THREE.WireframeGeometry( geometry );
 	const wireframeMaterial = new THREE.LineBasicMaterial( { color: 'rgb(93,159,153)' } );
 	const wireframe = new THREE.LineSegments( wireframeGeometry, wireframeMaterial );
@@ -137,10 +161,15 @@ function setupPlane() {
 
 function setupLights() {
   // let ambientLight = new THREE.AmbientLight(0x0c0c0c);
-  // scene.add(ambientLight);
+	let ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(195,44,110)'));
+	ambientLight.position.set(10, 0, 50);
+  scene.add(ambientLight);
   
-  let spotLight = new THREE.SpotLight(0xcccccc);
-  spotLight.position.set(-30, 60, 60);
+  // let spotLight = new THREE.SpotLight(0xcccccc);
+  let spotLight = new THREE.SpotLight(0xffffff);
+  // let spotLight = new THREE.SpotLight(new THREE.Color('rgb(195,44,110)'));
+  // spotLight.position.set(-30, 60, 60);
+  spotLight.position.set(10, 0, 50);
   spotLight.castShadow = true;
   scene.add(spotLight);
 }
@@ -161,36 +190,12 @@ function init() {
 
     container = document.getElementById("ThreeJS");
     container.appendChild(renderer.domElement);
-
-    // THREEx.WindowResize(renderer, camera);
-
-    // var light = new THREE.PointLight();
-    // light.position.set(200, 200, 100);
-    // var lightSize = 20;
-    // lightHelper = new THREE.PointLightHelper(light, lightSize);
-    // scene.add(light);
-    // scene.add(lightHelper);
-
-    var size = window.innerWidth * 2;
-    var divisions = 100;
-
-    var cubeGeometry = new THREE.CubeGeometry(.5, .5, .2, 5, 5, 5);
-    var wireMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
-				wireframe: true
-    });
-
-    // movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
-		// movingCube.position.set(0, -18.8, 0.1);
-		// scene.add(movingCube);
-		
     renderer.render(scene, camera);
 }
 
 function draw() {
   let offset = Date.now() * 0.0004;
   adjustVertices(offset);
-	// adjustCameraPos(offset);
 	if(gameStarted){
 		requestAnimationFrame(draw);
 		update()
@@ -213,17 +218,10 @@ function adjustVertices(offset) {
   geometry.computeVertexNormals();
 }
 
-// function adjustCameraPos(offset) {  
-  // let x = camera.position.x / xZoom;
-  // let y = camera.position.y / yZoom;
-  // let noise = simplex.noise2D(x, y + offset) * noiseStrength + 1.5; 
-  // camera.position.z = noise;
-// }
-
 function update() {
-	var delta = clock.getDelta();
-	var moveDistance = 200 * delta;
-	var rotateAngle = Math.PI / 2 * delta;
+	// var delta = clock.getDelta();
+	// var moveDistance = 200 * delta;
+	// var rotateAngle = Math.PI / 2 * delta;
 
 	skateboard.position.x -= zOrientation;
 
@@ -265,7 +263,7 @@ function update() {
 		// skateboardGeometry.material.color.setHex(0x00ff00);
 	}
 
-	if (Math.random() < 0.03 && cubes.length < 30) {
+	if (Math.random() < 0.03 && cubes.length < 10) {
 		makeRandomCube();
 	}
 
@@ -294,15 +292,6 @@ function getRandomInt(min, max) {
 }
 
 function makeRandomCube() {
-    // var a = 1 * 50,
-    //     b = getRandomInt(1, 3) * 50,
-    //     c = 1 * 50;
-    // var geometry = new THREE.CubeGeometry(a, b, c);
-    // var material = new THREE.MeshBasicMaterial({
-    //     color: Math.random() * 0xffffff,
-    //     size: 3,
-    // });
-
     // var object = new THREE.Mesh(geometry, material);
     // var box = new THREE.BoxHelper(object);
     //     // box.material.color.setHex(Math.random() * 0xffffff);
@@ -319,16 +308,18 @@ function makeRandomCube() {
 
 		// scene.add(box);
 		
-		var geometry = new THREE.CubeGeometry(.5, .5, getRandomInt(1, 3) * .5);
-		var material = new THREE.MeshBasicMaterial({
-				color: Math.random() * 0xffffff,
-				size: 3,
-		});
+		// var geometry = new THREE.CubeGeometry(.5, .5, getRandomInt(1, 3) * .5);
 
-		var object = new THREE.Mesh(geometry, material);
+		let material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x009900, shininess: 30, flatShading: true } );
+		let rockGeometry = new THREE.Geometry().fromBufferGeometry( rock.children[0].geometry );
+
+		var object = new THREE.Mesh(rockGeometry, material);
 		object.position.x = getRandomArbitrary(-2, 2);
 		object.position.y = getRandomArbitrary(50, 0);
 		object.position.z = 0;
+
+		object.scale.set(0.4, 0.4, 0.4);
+		object.rotation.set(2, 1.58, -0.5);
 
 		cubes.push(object);
 		object.name = "box_" + id;
@@ -355,9 +346,7 @@ let interval;
 
 window.onload = () => {
   const connectButton = document.getElementById('connect');
-  var initialised = false;
   var previousValue;
-  var difference;
 
   connectButton.onclick = function(){
     var controller = new DaydreamController();
