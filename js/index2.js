@@ -5,7 +5,6 @@
 	// blue: rgb(93, 159, 153)
 
 var container;
-var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock;
 
 var movingCube;

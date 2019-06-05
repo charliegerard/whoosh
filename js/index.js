@@ -35,11 +35,11 @@ function init() {
     camera.position.y = 70;
 
     // Renderer
-    if (Detector.webgl) {
+    // if (Detector.webgl) {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    } else {
-      renderer = new THREE.CanvasRenderer();
-    }
+    // } else {
+      // renderer = new THREE.CanvasRenderer();
+    // }
 
     renderer.setSize(screenWidth, screenHeight);
     renderer.autoClear = false;
