@@ -364,7 +364,7 @@ window.onload = () => {
 			if(previousValue !== state.zOri){
 				// zOrientation = state.zOri * 10;
 				difference = state.zOri - previousValue;
-				zOrientation = state.zOri * 15
+				zOrientation = state.zOri 
 			}
 			previousValue = state.zOri
 			// var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );
