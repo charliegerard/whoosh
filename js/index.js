@@ -1,11 +1,9 @@
-var container, scene, camera, renderer, controls;
-var keyboard = new THREEx.KeyboardState();
-var clock = new THREE.Clock;
+/* 3D skateboard model from https://poly.google.com/view/7Dfn4VtTCWY */
+/* Rock model from https://poly.google.com/view/dmRuyy1VXEv */
 
-var movingCube;
+var container;
 var collideMeshList = [];
 var cubes = [];
-var message = document.getElementById("message");
 var crash = false;
 var score = 0;
 var scoreText = document.getElementById("score");
@@ -13,187 +11,285 @@ var id = 0;
 var crashId = " ";
 var lastCrashId = " ";
 
+let scene, camera, renderer, simplex, plane, geometry, xZoom, yZoom, noiseStrength;
+let skateboard, rock, rockMesh;
+
 var bluetoothConnected = false;
-
+var gameStarted = false;
 var zOrientation = 0;
-
 let counter = 3;
+var sound;
+var glitchPass, composer;
 
+setup();
 init();
+draw();
 
-function init() {
-    // Scene
-    scene = new THREE.Scene();
-    // scene.fog = new THREE.FogExp2( new THREE.Color("rgb(0,0,0)"), 0.0004 );
-    scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
-
-    // Camera
-    var screenWidth = window.innerWidth;
-    var screenHeight = window.innerHeight;
-    camera = new THREE.PerspectiveCamera(75, screenWidth / screenHeight, 1, 1500);
-    camera.position.z = 100;
-    camera.position.y = 70;
-
-    // Renderer
-    // if (Detector.webgl) {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    // } else {
-      // renderer = new THREE.CanvasRenderer();
-    // }
-
-    renderer.setSize(screenWidth, screenHeight);
-    renderer.autoClear = false;
-    renderer.setClearColor(0x000000, 0.0);
-    renderer.setClearAlpha(1.0)
-    container = document.getElementById("ThreeJS");
-    container.appendChild(renderer.domElement);
-
-    THREEx.WindowResize(renderer, camera);
-
-    var light = new THREE.PointLight();
-    light.position.set(200, 200, 100);
-    var lightSize = 30;
-    lightHelper = new THREE.PointLightHelper(light, lightSize);
-    scene.add(light);
-    scene.add(lightHelper);
-
-    var size = window.innerWidth * 2;
-    var divisions = 100;
-    // var gridColor = new THREE.Color("rgb(145,252,253)");
-    var gridColor = new THREE.Color("rgb(0,0,0)");
-    var gridHelper = new THREE.GridHelper( size, divisions, 0x91FCFD, 0x91FCFD );
-    gridHelper.position.z = -1000;
-    gridHelper.position.y = -50;
-    scene.add( gridHelper );
-
-    var cubeGeometry = new THREE.CubeGeometry(50, 25, 60, 5, 5, 5);
-    var wireMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
-        wireframe: true
-    });
-
-    movingCube = new THREE.Mesh(cubeGeometry, wireMaterial);
-    //            movingCube = new THREE.Mesh(cubeGeometry, material);
-    //            movingCube = new THREE.BoxHelper(movingCube);
-    movingCube.position.set(0, 25, -20);
-    scene.add(movingCube);
-
-    renderer.render(scene, camera);
+function setup(){
+	setupNoise();
+	setup3DModel();
+	setupRockModel();
+	setupScene();
+	setupSound();
+	setupPlane();
+	setupLights();
 }
 
-function animate() {
-  requestAnimationFrame(animate);
-  update();
-  renderer.render(scene, camera);
+function setupSound(){
+	sound = new Howl({
+    src: ['assets/delorean-dynamite-long-2.m4a'],
+    loop: true,
+  });
+}
+
+function setupNoise() {
+  xZoom = 7;
+  yZoom = 15;
+  noiseStrength = 3;
+  simplex = new SimplexNoise();
+}
+
+function setupScene() {
+    scene = new THREE.Scene();
+
+    let res = window.innerWidth / window.innerHeight;
+    camera = new THREE.PerspectiveCamera(75, res, 0.1, 1000);
+    camera.position.set(0, -20, 1);
+    camera.rotation.x = -300;
+
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        alpha: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.autoClear = false;
+    renderer.setClearColor(0x000000, 0.0);
+    renderer.setClearAlpha(1.0);
+
+    document.body.appendChild(renderer.domElement);
+}
+
+function setup3DModel(){
+	var loader = new THREE.OBJLoader();
+	loader.load(
+		'assets/Skateboard.obj',
+		function ( object ) {
+			skateboard = object;
+			skateboard.position.set(0, -19, -0.1);
+			skateboard.rotation.set(2, 1.58, -0.5);
+			skateboard.scale.set(0.3, 0.3, 0.3);
+	
+			object.traverse( function ( child ) {
+				let material = new THREE.MeshStandardMaterial({
+					color: new THREE.Color('rgb(195,44,110)'),
+				});
+        if ( child instanceof THREE.Mesh ) {
+          child.material = material;
+        }
+			});
+		
+			scene.add( skateboard );
+			renderer.render(scene, camera);
+		}
+	);
+}
+
+function setupRockModel(){
+	var loader = new THREE.OBJLoader();
+	loader.load(
+		'assets/PUSHILIN_rock.obj',
+		function ( object ) {
+			rock = object;
+			rock.position.set(1, -18, -0.1);
+			rock.rotation.set(2, 1.58, -0.5);
+			rock.scale.set(0.4, 0.4, 0.4);
+
+			let material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x009900, shininess: 30, flatShading: true } );
+			rock.traverse( function ( child ) {
+				if ( child instanceof THREE.Mesh ) {
+					rockMesh = child;
+					rockMesh.material = material;
+				}
+			});
+		}
+	);
+}
+
+function setupPlane() {
+  let side = 120;
+  geometry = new THREE.PlaneGeometry(40, 40, side, side);
+
+	let material = new THREE.MeshStandardMaterial({
+		color: new THREE.Color('rgb(16,28,89)'),
+	});
+
+	plane = new THREE.Mesh(geometry, material);
+  plane.castShadow = true;
+	plane.receiveShadow = true;
+	scene.add(plane);
+
+	const wireframeGeometry = new THREE.WireframeGeometry( geometry );
+	const wireframeMaterial = new THREE.LineBasicMaterial( { color: 'rgb(93,159,153)' } );
+	const wireframe = new THREE.LineSegments( wireframeGeometry, wireframeMaterial );
+
+	plane.add( wireframe );
+}
+
+function setupLights() {
+	let ambientLight = new THREE.AmbientLight(new THREE.Color('rgb(195,44,110)'));
+	ambientLight.position.set(10, 0, 50);
+    scene.add(ambientLight);
+    
+    let spotLight = new THREE.SpotLight(0xffffff);
+    spotLight.position.set(10, 0, 50);
+    spotLight.castShadow = true;
+    scene.add(spotLight);
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function init() {
+    scene.fog = new THREE.FogExp2( new THREE.Color("#5a008a"), 0.0003 );
+
+    container = document.getElementById("ThreeJS");
+    container.appendChild(renderer.domElement);
+    renderer.render(scene, camera);
+
+    window.addEventListener("resize", onWindowResize);
+}
+
+function draw() {
+  let offset = Date.now() * 0.0004;
+  adjustVertices(offset);
+	if(gameStarted){
+		requestAnimationFrame(draw);
+		update()
+	}
+	if(composer){
+		composer.render();
+	}
+	renderer.render(scene, camera);
+}
+
+function adjustVertices(offset) {
+  for (let i = 0; i < plane.geometry.vertices.length; i++) {
+    let vertex = plane.geometry.vertices[i];
+    let x = vertex.x / xZoom;
+    let y = vertex.y / yZoom;
+    
+    if(vertex.x < -2.5 || vertex.x > 2.5){
+      let noise = simplex.noise2D(x, y + offset) * noiseStrength; 
+      vertex.z = noise;
+    }
+  }
+  geometry.verticesNeedUpdate = true;
+  geometry.computeVertexNormals();
 }
 
 function update() {
-    var delta = clock.getDelta();
-    var moveDistance = 200 * delta;
-    var rotateAngle = Math.PI / 2 * delta;
+	skateboard.position.x -= zOrientation;
 
-    movingCube.position.x -= zOrientation;
+	if(skateboard.position.x > 2 && zOrientation < 0){
+		skateboard.position.x += zOrientation;
+	}
+	if(skateboard.position.x < -2 && zOrientation > 0){
+		skateboard.position.x += zOrientation;
+	}
 
-    if(movingCube.position.x > 75 && zOrientation < 0){
-      movingCube.position.x += zOrientation;
-    }
-    if(movingCube.position.x < -75 && zOrientation > 0){
-      movingCube.position.x += zOrientation;
-    }
+	let skateboardGeometry = new THREE.Geometry().fromBufferGeometry( skateboard.children[0].geometry );
 
-    var originPoint = movingCube.position.clone();
+	var originPoint = skateboard.position.clone();
 
-    for (var vertexIndex = 0; vertexIndex < movingCube.geometry.vertices.length; vertexIndex++) {
-        var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
-        var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
-        var directionVector = globalVertex.sub(movingCube.position);
+	for (var vertexIndex = 0; vertexIndex < skateboardGeometry.vertices.length; vertexIndex++) {
+		var localVertex = skateboardGeometry.vertices[vertexIndex].clone();
+		var globalVertex = localVertex.applyMatrix4(skateboard.matrix);
+		var directionVector = globalVertex.sub(skateboard.position);
 
-        var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
-        var collisionResults = ray.intersectObjects(collideMeshList);
-        if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-            crash = true;
-            crashId = collisionResults[0].object.name;
-            break;
-        }
-        crash = false;
-    }
+		var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+		var collisionResults = ray.intersectObjects(collideMeshList);
+		if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+				crash = true;
+				crashId = collisionResults[0].object.name;
+				break;
+		}
+		crash = false;
+	}
 
-    if (crash) {
-        movingCube.material.color.setHex(0x346386);
-        console.log("Crash");
-        if (crashId !== lastCrashId) {
-            score -= 100;
-            lastCrashId = crashId;
-        }
+	glitchPass = new THREE.GlitchPass();
+	composer = new THREE.EffectComposer( renderer );
 
-        document.getElementById('explode_sound').play()
-    } else {
-        movingCube.material.color.setHex(0x00ff00);
-    }
+	if (crash) {
+		if (crashId !== lastCrashId) {
+			score -= 1;
+			lastCrashId = crashId;
 
-    if (Math.random() < 0.03 && cubes.length < 30) {
-        makeRandomCube();
-    }
+			glitchPass.enabled = true;
+			composer.addPass( glitchPass );
+		}
 
-    for (i = 0; i < cubes.length; i++) {
-        if (cubes[i].position.z > camera.position.z) {
-            scene.remove(cubes[i]);
-            cubes.splice(i, 1);
-            collideMeshList.splice(i, 1);
-        } else {
-            cubes[i].position.z += 10;
-        }
-        //                renderer.render(scene, camera);
-    }
+		document.getElementById('explode_sound').play();
+	} else {
+		glitchPass.enabled = false;
+		composer.addPass( glitchPass );
+	}
 
-    score += 0.1;
-    scoreText.innerText = "Score:" + Math.floor(score);
+	if (Math.random() < 0.03 && cubes.length < 10) {
+		makeRandomCube();
+	}
+
+  for (i = 0; i < cubes.length; i++) {
+		if (cubes[i].position.y < -20) {
+			scene.remove(cubes[i]);
+			cubes.splice(i, 1);
+			collideMeshList.splice(i, 1);
+			//if(!crash){
+				score += 1;
+			//}
+		} else {
+			cubes[i].position.y -= 0.05;
+		}
+	}
+	scoreText.innerText = "Score:" + Math.floor(score);
 }
 
 function getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
+  return Math.random() * (max - min) + min;
 }
 
 function makeRandomCube() {
-    var a = 1 * 50,
-        b = getRandomInt(1, 3) * 50,
-        c = 1 * 50;
-    var geometry = new THREE.CubeGeometry(a, b, c);
-    var material = new THREE.MeshBasicMaterial({
-        color: Math.random() * 0xffffff,
-        size: 3,
-    });
+	let material = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x009900, shininess: 30, flatShading: true } );
+	let rockGeometry = new THREE.Geometry().fromBufferGeometry( rock.children[0].geometry );
 
-    var object = new THREE.Mesh(geometry, material);
-    var box = new THREE.BoxHelper(object);
-        // box.material.color.setHex(Math.random() * 0xffffff);
-    box.material.color.setHex(0xff0000);
+	var object = new THREE.Mesh(rockGeometry, material);
+	object.position.x = getRandomArbitrary(-2, 2);
+	object.position.y = getRandomArbitrary(50, 0);
+	object.position.z = 0;
 
-    box.position.x = getRandomArbitrary(-250, 250);
-    box.position.y = 1 + b / 2;
-    // box.position.z = getRandomArbitrary(-800, -1200);
-    box.position.z = getRandomArbitrary(-3000, -5000);
-    cubes.push(box);
-    box.name = "box_" + id;
-    id++;
-    collideMeshList.push(box);
+	object.scale.set(0.4, 0.4, 0.4);
+	object.rotation.set(2, 1.58, -0.5);
 
-    scene.add(box);
+	cubes.push(object);
+	object.name = "box_" + id;
+	id++;
+	collideMeshList.push(object);
+
+	scene.add(object);
 }
 
 function displayCounter(){
   const counterDiv = document.getElementsByClassName('counter')[0];
-  counterDiv.innerHTML = counter;
+	counterDiv.innerHTML = counter;
   if(counter > 0){
     counter--;
   } else if(counter === 0){
     clearInterval(interval);
-    counterDiv.classList.add('fade-out');
-    animate();
+		counterDiv.classList.add('fade-out');
+		gameStarted = true;
+		draw();
   }
 }
 
@@ -201,19 +297,19 @@ let interval;
 
 window.onload = () => {
   const connectButton = document.getElementById('connect');
-  var initialised = false;
   var previousValue;
-  var difference;
 
   connectButton.onclick = function(){
-
     var controller = new DaydreamController();
     controller.onStateChange( function ( state ) {
       if(!bluetoothConnected){
         bluetoothConnected = true;
-        connectButton.classList.add('fade-out');
+	    connectButton.classList.add('fade-out');
+				
         const title = document.getElementsByClassName('title')[0];
-        title.classList.add('fade-out');
+				title.classList.add('fade-out');
+				sound.play()
+				sound.fade(0, 1, 3000);
 
         interval = setInterval(function(){
           displayCounter();
@@ -221,9 +317,9 @@ window.onload = () => {
       }
 
         if(previousValue !== state.zOri){
-          // zOrientation = state.zOri * 10;
-          difference = state.zOri - previousValue;
-          zOrientation = state.zOri * 15
+            // zOrientation = state.zOri * 10;
+            // difference = state.zOri - previousValue;
+            zOrientation = state.zOri 
         }
         previousValue = state.zOri
         // var angle = Math.sqrt( state.xOri * state.xOri + state.yOri * state.yOri + state.zOri * state.zOri );

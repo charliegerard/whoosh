@@ -14,5 +14,6 @@ Interactive experiment connecting a Daydream controller to the web to provide so
 - [x] Replace cube with skateboard
 - [x] Style sky
 - [x] Add postprocessing effect on collision
-- [] Find a way to fade out the sound before the end
+- [x] Find a way to fade out the sound before the end
 - [] Fix score
+- [] Accelerate when moving the skateboard up and down
