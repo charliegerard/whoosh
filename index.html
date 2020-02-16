@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Hoverboard game</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Untitled game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/103/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js"></script>
-    <script src="js/noiseSimplex.js"></script>
     <script src="js/postprocessing/CopyShader.js"></script>
     <script src="js/postprocessing/DigitalGlitch.js"></script>
     <script src="js/postprocessing/EffectComposer.js"></script>
@@ -13,25 +15,40 @@
     <script src="js/postprocessing/GlitchPass.js"></script>
     <script src="js/OBJLoader.js"></script>
     <script src="js/MTLLoader.js"></script>
-    <script src="js/daydream.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Permanent+Marker|Teko:400,600,700" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <section class="intro">
-    <h1 class="title">HOVERBOARD</h1>
-    <button id="connect">Connect to start playing</button>
-  </section>
-  <section class="game">
-    <div class="sun"></div>
-    <div class="score-container">
-      <div id="score"></div>
-    </div>
-    <div id="ThreeJS"></div>
-    <div class="counter"></div>
-  </section>
-  <audio src="sound/explode.mp3" preload="auto" id="explode_sound"></audio>
+    <link
+      href="https://fonts.googleapis.com/css?family=Permanent+Marker|Teko:400"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="webcam-container"></div>
+    <section class="intro">
+      <h1 class="title">UNTITLED</h1>
+      <div id="connect">
+        <p>
+          Control the spaceship with hand movements, and avoid all the donuts
+        </p>
+        <button>Start</button>
+      </div>
+    </section>
+    <section class="game">
+      <div class="score-container">
+        <div id="score"></div>
+      </div>
+      <div id="ThreeJS"></div>
+      <div class="counter"></div>
+    </section>
+    <audio src="./sound/explode.mp3" preload="auto" id="explode_sound"></audio>
 
-  <script src="js/index.js"></script>
-</body>
+    <section class="mobile-message">
+      <p>
+        It looks like you're using a mobile phone; I'm glad you're interested in
+        trying this game but I optimised it for desktop for now (yeah, not cool,
+        I know 😞).
+      </p>
+    </section>
+
+    <script src="index.js"></script>
+  </body>
 </html>

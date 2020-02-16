@@ -1,0 +1,14 @@
+{
+  "name": "untitled",
+  "version": "1.0.0",
+  "description": "Interactive game to play with hand movements.",
+  "scripts": {
+    "start": "python -m SimpleHTTPServer 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charliegerard/untitled"
+  },
+  "author": "Charlie Gerard <charlie.a.gerard@gmail.com>",
+  "license": "GNU"
+}
