@@ -74,7 +74,7 @@ function setupStars() {
 
 function setupSound() {
   sound = new Howl({
-    src: ["assets/delorean-dynamite-long-2.m4a"],
+    src: ["assets/background.mp3"],
     loop: true
   });
 }
