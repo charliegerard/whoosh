@@ -27,7 +27,8 @@ let scene,
   xZoom,
   yZoom,
   noiseStrength;
-let spaceship, rock, rockMesh;
+let spaceship, donut, donutMesh;
+let donutMaterials;
 
 var gameStarted = false;
 var zOrientation = 0;
@@ -42,7 +43,7 @@ draw();
 function setup() {
   setupScene();
   setup3DModel();
-  setupRockModel();
+  setupdonutModel();
   setupStars();
   setupSound();
   setupLights();
@@ -101,14 +102,14 @@ function setupScene() {
 
 function setup3DModel() {
   var mtlLoader = new THREE.MTLLoader();
-  mtlLoader.setPath("assets/"); //Give the path upto the mtl file
+  mtlLoader.setPath("assets/");
   mtlLoader.load("cheese/materials.mtl", function(materials) {
     hotdogMaterial = materials;
-    materials.preload(); //We can preload the material resources like this.
+    materials.preload();
 
     var objLoader = new THREE.OBJLoader();
-    objLoader.setMaterials(materials); //Set the materials for the objects using OBJLoader's setMaterials method
-    objLoader.setPath("assets/"); //Give the path upto the obj file
+    objLoader.setMaterials(materials);
+    objLoader.setPath("assets/");
     objLoader.load("cheese/cheese-spaceship.obj", function(object) {
       spaceship = object;
 
@@ -123,20 +124,18 @@ function setup3DModel() {
   });
 }
 
-function setupRockModel() {
+function setupdonutModel() {
   var mtlLoader = new THREE.MTLLoader();
-  mtlLoader.setPath("assets/"); //Give the path upto the mtl file
+  mtlLoader.setPath("assets/");
   mtlLoader.load("donut/materials.mtl", function(materials) {
-    materials.preload(); //We can preload the material resources like this.
+    materials.preload();
 
     var objLoader = new THREE.OBJLoader();
-    objLoader.setMaterials(materials); //Set the materials for the objects using OBJLoader's setMaterials method
-    objLoader.setPath("assets/"); //Give the path upto the obj file
+    objLoader.setMaterials(materials);
+    objLoader.setPath("assets/");
     objLoader.load("donut/model.obj", function(object) {
-      rock = object;
-      rock.position.set(1, -18, 1);
-      rock.rotation.set(0, 0, 1);
-      rock.scale.set(1, 1, 1);
+      donut = object;
+      donutMaterials = materials;
     });
   });
 }
@@ -175,12 +174,10 @@ function draw() {
     if (gesturePredicted === "left" && spaceship.position.x > -3) {
       spaceship.rotation.y -= 0.005;
       spaceship.rotation.z += 0.001;
-
       spaceship.position.x -= 0.04;
     } else if (gesturePredicted === "right" && spaceship.position.x < 3) {
       spaceship.rotation.y += 0.005;
       spaceship.rotation.z -= 0.001;
-
       spaceship.position.x += 0.04;
     }
   }
@@ -294,22 +291,21 @@ function getRandomArbitrary(min, max) {
 }
 
 function makeRandomCube() {
-  var newRock = rock.clone();
+  var newdonut = donut.clone();
 
-  newRock.position.x = getRandomArbitrary(-25, 25);
-  newRock.position.y = getRandomArbitrary(50, 0);
-  newRock.position.z = 0;
+  newdonut.position.x = getRandomArbitrary(-25, 25);
+  newdonut.position.y = getRandomArbitrary(50, 0);
+  newdonut.position.z = 0;
 
-  newRock.scale.set(7, 7, 7);
-  // object.rotation.set(2, 1.58, -0.5);
-  newRock.rotation.set(0, 0, 1);
+  newdonut.scale.set(7, 7, 7);
+  newdonut.rotation.set(0, 0, 1);
 
-  cubes.push(newRock);
-  newRock.name = "box_" + id;
+  cubes.push(newdonut);
+  newdonut.name = "box_" + id;
   id++;
-  collideMeshList.push(newRock);
+  collideMeshList.push(newdonut);
 
-  scene.add(newRock);
+  scene.add(newdonut);
 }
 
 let interval;
@@ -350,20 +346,25 @@ const isMobile = () => {
 };
 
 async function initML() {
+  const button = document.getElementsByTagName("button")[0];
+  button.disabled = true;
+
   const modelURL = URL + "model.json";
   const metadataURL = URL + "metadata.json";
   model = await tmImage.load(modelURL, metadataURL);
   maxPredictions = model.getTotalClasses();
 
-  const flip = true; // whether to flip the webcam
+  const flip = true;
   webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
-  await webcam.setup(); // request access to the webcam
+  await webcam.setup();
   await webcam.play();
+  button.innerHTML = "Start";
+  button.disabled = false;
   window.requestAnimationFrame(loop);
 }
 
 async function loop() {
-  webcam.update(); // update the webcam frame
+  webcam.update();
   await predict();
   window.requestAnimationFrame(loop);
 }
