@@ -1,5 +1,5 @@
 {
-  "name": "untitled",
+  "name": "Whoosh",
   "version": "1.0.0",
   "description": "Interactive game to play with hand movements.",
   "scripts": {
@@ -7,7 +7,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/charliegerard/untitled"
+    "url": "https://github.com/charliegerard/whoosh"
   },
   "author": "Charlie Gerard <charlie.a.gerard@gmail.com>",
   "license": "GNU"
